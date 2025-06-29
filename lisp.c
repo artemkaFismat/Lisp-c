@@ -25,54 +25,62 @@ THE SOFTWARE. */
 #include <ctype.h>
 #include <string.h>
 #include <editline.h>
-//#include <editline/history.h>
 
 #define SCAN_BUFFER 1024
 
-#define PROMT_STRING "user>>"
+#define PROMT_STRING ">>"
 
-char* is_keyword(char in) {
-	if (in == ' ') return "space";
-	//if (strcmp(in, "\0") == 0) return " ";
-	if (in == '(' || in == ')') return "sk";
+const int EXIT = 0, O_PLUS = 1, O_MINUS = 2, O_MUL = 3, O_DIV = 4;
 
-	if (in == '+') return "plus";
-	if (in == '-') return "minus";
 
-	if (isdigit(in)) return "digit";
-
-	return "\0";
-	//if (in == "expt") return "expt";
+const int is_keyword(const char* in) {
+	if (strcmp(in, "+") == 0) return O_PLUS;
+	if (strcmp(in, "-") == 0) return O_MINUS;
+	if (strcmp(in, "*") == 0) return O_MUL;
+	if (strcmp(in, "/") == 0) return O_DIV;
+	
+	return EXIT;
 }
 
 void scan(char* input) {
 	printf("%s\n", input);
 	
 	for (int i = 0; i < sizeof(input); ++i) {
-		printf("%c\n", input[i]);
-		printf("%s\n", is_keyword(input[i]));
-
-		if (isalpha(input[i])) {
+		if (isdigit(input[i])) {
+			int digit = input[i] - '0';
 			int j = i;
-			while (isalpha(input[j]) && input[j] != ' ') {
-				printf("%c", input[j]);
-				++j;
+			while (isdigit(input[j]) && isdigit(input[j + 1]) && input[j] != ' ') {
+					digit = (digit * 10) + (input[j] -'0');
+					++j;
 			}
 			i = j;
+			printf("%d\n", digit);
+		}
+		else if (isalpha(input[i])) {
+			char lexem[100] = {0};
+			int pos = 0;
+			int j = i;
+			while (isalpha(input[j])) {
+				lexem[pos++] = input[j];
+				++j;
+			}
+			lexem[pos] = '\0';
+			i = j - 1;
+			printf("%s\t", lexem);
+			printf("%d\n", is_keyword(lexem));
+		}
+		else if (isspace(input[i])) {
+			continue;
+		}
+		else {
+			char symbol[2] = {input[i], '\0'};
+			printf("%s\t", symbol);
+			printf("%d\n", is_keyword(symbol));
 		}
 	}
-	/*char dij = '';
-	int df = 0, cf = 0;
-	for (char* i = arr; *i != '\0'; ++i) {
-		printf("%c\n", *i);
-		if (isdigit(*i)) {
-			printf("%s", "hello");
-		}
-	}*/
-
 }
 
-int main(int argc, char** argv) {
+int main() {
 	puts("Lisp version 0.0.1\n");
 	puts("Press Ctrl+d to exit\n");
 
